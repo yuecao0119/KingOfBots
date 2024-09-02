@@ -1,5 +1,7 @@
 # 联机版贪吃蛇 King of Bots
 
+参考AcWing的SpringBoot项目课程完成开发，项目包含的模块：PK模块：匹配界面（微服务）、实况直播界面（WebSocket协议）、对局列表模块、排行榜模块、用户中心模块；采用前后端分离模式 SpringBoot实现后端 Vue3实现Web端和AcApp端。
+
 ## ⭐链接
 
 **项目开源链接**：https://github.com/yuecao0119/KingOfBots
