@@ -19,7 +19,7 @@ export default {
 <style>
 /* 添加背景图案 */
 body {
-  background-image: url('./assets/background.png');
+  background-image: url('./assets/images/background.png');
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
