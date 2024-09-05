@@ -1,7 +1,7 @@
 <template>
     <div ref="parent" class="gamemap"> 
         <!-- ref="parent"，这样parent才能指向这个div -->
-        <canvas ref="canvas">
+        <canvas ref="canvas" tabindex="0">
         </canvas>
     </div>
 </template>

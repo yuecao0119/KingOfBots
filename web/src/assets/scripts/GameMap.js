@@ -1,4 +1,5 @@
 import { AcGameObject } from "./AcGameObject"; // 引入 AcGameObject 基类
+import { Snake } from "./Snake.js";
 import { Wall } from "./Wall.js";
 
 // 定义一个游戏地图类，继承自 AcGameObject
@@ -13,11 +14,16 @@ export class GameMap extends AcGameObject {
         
         // 因为游戏地图的大小是相对于浏览器窗口的大小的，所以我们需要的是每个物体的相对长度。然后只需要根据一个单位的绝对长度，就可以在浏览器窗口改变时，获得实时的渲染绝对长度
         this.L = 0; // 一个单位的绝对距离
-        this.cols = 13;
+        this.cols = 14;
         this.rows = 13;
 
         this.walls = []; // 存储所有的墙对象
         this.inner_walls_count = 20; // 内部墙体的数量
+
+        this.snakes = [
+            new Snake({id: 0, r: this.rows - 2, c: 1, color: "#4876eb"}, this),
+            new Snake({id: 1, r: 1, c: this.cols - 2, color: "#fc4749"}, this),
+        ]; // 存储所有的蛇对象
     }
 
     // 检查非障碍物地图是否连通
@@ -62,12 +68,12 @@ export class GameMap extends AcGameObject {
             for (let j = 0; j < 1000; j++ ) {
                 let r = parseInt(Math.random() * this.rows);
                 let c = parseInt(Math.random() * this.cols);
-                if (g[r][c] || g[c][r]) continue; // 之前存在则重新随机
+                if (g[r][c] || g[this.rows - 1 - r][this.cols - 1 - c]) continue; // 之前存在则重新随机
                 // 我们希望对战双方出生点在左下角和右上角，所以不希望墙体生成在这里
                 if (r == this.rows - 2 && c == 1 || c == this.cols - 2 && r == 1)
                     continue;
 
-                g[r][c] = g[c][r] = true;
+                g[r][c] = g[this.rows - 1 - r][this.cols - 1 - c] = true;
                 break;
             }
         }
@@ -89,11 +95,33 @@ export class GameMap extends AcGameObject {
         return true;
     }
 
+    // 添加监听事件
+    add_listening_events() {
+        this.ctx.canvas.focus(); // 让canvas获得焦点，从而可以接收键盘事件
+
+        // 监听键盘事件
+        const [snake0, snake1] = this.snakes;
+        this.ctx.canvas.addEventListener("keydown", e => {
+            console.log(e.key)
+
+            if (e.key === 'w') snake0.set_direction(0);
+            else if (e.key === 'd') snake0.set_direction(1);
+            else if (e.key === 's') snake0.set_direction(2);
+            else if (e.key === 'a') snake0.set_direction(3);
+            else if (e.key === 'ArrowUp') snake1.set_direction(0);
+            else if (e.key === 'ArrowRight') snake1.set_direction(1);
+            else if (e.key === 'ArrowDown') snake1.set_direction(2);
+            else if (e.key === 'ArrowLeft') snake1.set_direction(3);
+        });
+    }
+
     start() {
         // 直接循环1000次防止生成地图不连通
         for(let i = 0; i < 1000; i++)
             if (this.create_walls())
                 break;
+
+        this.add_listening_events();
     }
 
     update_size() {
@@ -102,8 +130,27 @@ export class GameMap extends AcGameObject {
         this.ctx.canvas.height = this.L * this.rows;
     }
 
+    // 判断两条蛇是否准备好下一回合
+    check_ready() {
+        for (const snake of this.snakes) {
+            if (snake.status !== "idle") return false; // 有蛇正在移动则返回false
+            if (snake.direction === -1) return false; // 有蛇没有准备好下一步移动方向则返回false
+        }
+        return true;
+    }
+
+    // 让两个蛇进入下一个回合
+    next_step() {
+        for (const snake of this.snakes) {
+            snake.next_step()
+        }
+    }
+
     update() {
         this.update_size(); // 更新画布大小
+        if (this.check_ready()) {
+            this.next_step();
+        }
         this.render(); // 调用渲染函数
 
     }
